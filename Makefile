@@ -2,12 +2,15 @@ programmer=C:/Program\ Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bi
 
 CC = arm-none-eabi-gcc
 CC_CPU = cortex-m4
-FPU_FLAGS = -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wdouble-promotion -Wfloat-conversion -fsingle-precision-constant
-OPTIMIZATION_FLAGS = -flto -Og -specs=nano.specs #-specs=nosys.specs #enable this if you are using stdio functions
-CC_FLAGS = -std=gnu11 -Wall -Wpedantic -Wextra -fstack-usage -mthumb -ffunction-sections -fdata-sections -fanalyzer  $(FPU_FLAGS) -g3 $(OPTIMIZATION_FLAGS) 
-#-fcyclomatic-complexity
 
-LD_FLAGS = -Wl,--gc-sections -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 $(OPTIMIZATION_FLAGS) -Wl,--print-memory-usage -Wl,--start-group -lc -lm -Wl,--end-group
+CC_LD_COMMON_FLAGS = --coverage
+FPU_FLAGS = -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wdouble-promotion -Wfloat-conversion -fsingle-precision-constant
+OPTIMIZATION_FLAGS = -O0 --specs=nano.specs
+
+CC_FLAGS = -std=gnu11 -Wall -Wpedantic -Wextra -fstack-usage -mthumb -ffunction-sections -fdata-sections -fanalyzer  \
+			$(FPU_FLAGS) -g3 $(OPTIMIZATION_FLAGS) $(CC_LD_COMMON_FLAGS) -fprofile-info-section
+
+LD_FLAGS = --specs=nosys.specs -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group $(CC_LD_COMMON_FLAGS)
 LINKER_SCRIPT = ./linker.ld
 
 APP_DIRECTORY = ./build/binaries
@@ -21,12 +24,13 @@ OBJ_DIRECTORY = ./build/src
 OBJ = $(subst $(SRC_DIRECTORY),$(OBJ_DIRECTORY),$(SRC:.c=.o))
 
 INC_DIRECTORY = ./includes
-# INCLUDES = $(subst $(SRC_DIRECTORY),$(INC_DIRECTORY),$(SRC:.c=.h))
+
+LIBS = -lgcov
 
 .PHONY: configure build
 build: configure $(OBJ) 
 	@echo Linking... 
-	@$(CC) -mcpu=$(CC_CPU) $(LD_FLAGS) $(OBJ) -o $(APP_DIRECTORY)/$(APP_NAME).elf -Wl,-T$(LINKER_SCRIPT) -Wl,-Map=$(APP_DIRECTORY)/$(APP_NAME).map
+	@$(CC) -mcpu=$(CC_CPU) $(LD_FLAGS) $(OBJ) -o $(APP_DIRECTORY)/$(APP_NAME).elf -Wl,-T$(LINKER_SCRIPT) -Wl,-Map=$(APP_DIRECTORY)/$(APP_NAME).map -Wl,--print-memory-usage $(LIBS)
 	@arm-none-eabi-objcopy -O ihex $(APP_DIRECTORY)/$(APP_NAME).elf $(APP_DIRECTORY)/$(APP_NAME).hex
 	@arm-none-eabi-objdump -h -S $(APP_DIRECTORY)/$(APP_NAME).elf > $(APP_DIRECTORY)/$(APP_NAME).lst
 

@@ -22,16 +22,24 @@ SECTIONS
     /* this will show individual text sections like text.xx */
     /* *(.text) */ 
     *(.text*)
-  } > FLASH
-
-  .init : 
-  {
     *(.init)
+    *(.fini)
   } > FLASH
 
-  .fini : 
+  .init_array :
   {
-    *(.fini)
+    . = ALIGN(4);
+    __init_array_start = .;
+    KEEP(*(SORT(.init_array*)))
+    __init_array_end = .;
+    . = ALIGN(4);
+  } > FLASH
+
+  .gcov_info :
+  {
+    PROVIDE (__gcov_info_start = .);
+    KEEP (*(.gcov_info))
+    PROVIDE (__gcov_info_end = .);
   } > FLASH
 
   .rodata :
@@ -63,6 +71,15 @@ SECTIONS
     . = ALIGN(4);
     _end = .; /* this is provided for the _sbrk to provide end of statically allocated memory so that heap can start */
     end = .;  /* this is provided for the _sbrk to provide end of statically allocated memory so that heap can start */
+  } > SRAM
+
+
+  .gcda_data :
+  {
+  	. = ALIGN(4);
+  	_gcda_start_addr = .;
+  	KEEP(*(.gcda))
+  	. = ALIGN(4);
   } > SRAM
 
   .heap :
