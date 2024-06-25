@@ -3,14 +3,16 @@ programmer=C:/Program\ Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bi
 CC = arm-none-eabi-gcc
 CC_CPU = cortex-m4
 
-CC_LD_COMMON_FLAGS = --coverage
+CC_LD_COMMON_FLAGS = --coverage -std=gnu17
 FPU_FLAGS = -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wdouble-promotion -Wfloat-conversion -fsingle-precision-constant
 OPTIMIZATION_FLAGS = -O0 --specs=nano.specs
 
-CC_FLAGS = -std=gnu11 -Wall -Wpedantic -Wextra -fstack-usage -mthumb -ffunction-sections -fdata-sections -fanalyzer  \
-			$(FPU_FLAGS) -g3 $(OPTIMIZATION_FLAGS) $(CC_LD_COMMON_FLAGS) -fprofile-info-section
+CC_FLAGS = -mcpu=cortex-m4 -std=gnu17 -g3 -O0 -ffunction-sections -fdata-sections -Wall -Wswitch-default --coverage -fstack-usage \
+			--specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
 
-LD_FLAGS = --specs=nosys.specs -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group $(CC_LD_COMMON_FLAGS)
+LD_FLAGS = -mcpu=cortex-m4 --specs=nosys.specs -Wl,--gc-sections -static --coverage --specs=nano.specs -mfpu=fpv4-sp-d16 \
+		   	-mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+
 LINKER_SCRIPT = ./linker.ld
 
 APP_DIRECTORY = ./build/binaries
@@ -25,20 +27,20 @@ OBJ = $(subst $(SRC_DIRECTORY),$(OBJ_DIRECTORY),$(SRC:.c=.o))
 
 INC_DIRECTORY = ./includes
 
-LIBS = -lgcov
+LIBS =
 
 .PHONY: configure build
 build: configure $(OBJ) 
 	@echo Linking... 
-	@$(CC) -mcpu=$(CC_CPU) $(LD_FLAGS) $(OBJ) -o $(APP_DIRECTORY)/$(APP_NAME).elf -Wl,-T$(LINKER_SCRIPT) -Wl,-Map=$(APP_DIRECTORY)/$(APP_NAME).map -Wl,--print-memory-usage $(LIBS)
+	@$(CC) $(LD_FLAGS) $(OBJ) -o $(APP_DIRECTORY)/$(APP_NAME).elf -Wl,-T$(LINKER_SCRIPT) -Wl,-Map=$(APP_DIRECTORY)/$(APP_NAME).map -Wl,--print-memory-usage
 	@arm-none-eabi-objcopy -O ihex $(APP_DIRECTORY)/$(APP_NAME).elf $(APP_DIRECTORY)/$(APP_NAME).hex
-	@arm-none-eabi-objdump -h -S $(APP_DIRECTORY)/$(APP_NAME).elf > $(APP_DIRECTORY)/$(APP_NAME).lst
+	@arm-none-eabi-objdump -D -S -C -h $(APP_DIRECTORY)/$(APP_NAME).elf > $(APP_DIRECTORY)/$(APP_NAME).lst
 
 	@make mem_report --no-print-directory
 	@printf "\e[1;96mBuild Successful  !!\e[0m\n"
 
 $(OBJ_DIRECTORY)%.o:$(SRC_DIRECTORY)%.c
-	$(CC) -mcpu=$(CC_CPU) $(CC_FLAGS) $< -c -o $@ -I$(INC_DIRECTORY)
+	$(CC) $(CC_FLAGS) $< -c -o $@ -I$(INC_DIRECTORY)
 
 configure:
 	@mkdir -p $(OBJ_DIRECTORY) $(APP_DIRECTORY)

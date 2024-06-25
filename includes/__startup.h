@@ -1,6 +1,7 @@
 
 
-void Reset_Handler(void);
+_ATTRIBUTE ((__noreturn__)) void Reset_Handler(void);
+
 __weak_symbol __attribute__((alias("Default_Handler"))) void NMI_Handler(void);
 __weak_symbol __attribute__((alias("Default_Handler"))) void HardFault_Handler(void);
 __weak_symbol __attribute__((alias("Default_Handler"))) void MemoryManagementFault_Handler(void);
