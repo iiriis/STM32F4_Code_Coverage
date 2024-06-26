@@ -47,6 +47,7 @@ int main(void)
     if(arr[4] > 100)
       arr[0] = arr[4];
 
+    // use debugger to change the value of arr[0] to 9 
     if(arr[0] == 9){
       __gcov_exit();
       gcda_end_addr = gcda_start_addr + gcda_d_idx;
