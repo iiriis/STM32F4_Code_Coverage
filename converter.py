@@ -1,5 +1,5 @@
 import re
-import os
+import sys
 
 def read_gcda_file(filepath):
     with open(filepath, 'rb') as file:
@@ -41,7 +41,13 @@ def read_gcda_file(filepath):
         print("No paths were found in the binary file.")
         return {}
 
-gcda_filepath = 'dump.bin'
+# total arguments
+if(len(sys.argv) < 2):
+    print("No File Specified !!!")
+    sys.exit(1)
+
+
+gcda_filepath = sys.argv[1]
 
 # Extract the paths and blobs
 extracted_data = read_gcda_file(gcda_filepath)
