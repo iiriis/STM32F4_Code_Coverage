@@ -6,6 +6,17 @@ It details the process of capturing coverage data (`gcda files`) directly in the
 This project is demonstrated using an `STM32F4` MCU, with `gcda` files stored as binary blobs in memory. However, the methodology is applicable to any MCU compatible with the arm-none-eabi toolchain, and the storage of `gcda` files can be achieved as previously mentioned.
 After retrieval of this data we can perform analysis with help of `gcovr`.
 
+Few snaps of the results can be seen below
+
+**Figure: Gcov Report**
+![](images/gcov_results.png)
+
+
+**Figure: main.c Coverage Results**
+![](images/main_coverage.png)
+
+In the above image the report depicts how many times each lines were executed. The lines in the red were never executed.
+
 ## Prerequisites
 
 - ARM GCC Toolchain.
